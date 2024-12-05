@@ -1,19 +1,25 @@
+import 'package:flame/game.dart';
 import 'package:flame/flame.dart';
-import 'package:flame/util.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:langaw/langaw-game.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
-  Util flameUtil = Util(); //flameのユーティリティ関数を呼び出す
-  await flameUtil.fullScreen(); //フルスクリーン関数
-  await flameUtil.setOrientation(DeviceOrientation.portraitUp); //ポートレートモード
+  // Ensure Flutter is initialized
+  WidgetsFlutterBinding.ensureInitialized();
 
+  // Set up device orientation and full screen
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]);
+  await Flame.device.fullScreen();
+
+  // Initialize shared preferences
   SharedPreferences storage = await SharedPreferences.getInstance();
 
-  Flame.images.loadAll(<String>[
+  // Preload all images
+  await Flame.images.loadAll([
     'bg/backyard.png',
     'bg/lose-splash.png',
     'branding/title.png',
@@ -44,8 +50,9 @@ void main() async {
     'ui/start-button.png',
   ]);
 
-  Flame.audio.disableLog();
-  Flame.audio.loadAll(<String>[
+  // Configure and preload audio
+  await Flame.audio.disableLog();
+  await Flame.audio.loadAll([
     'bgm/home.mp3',
     'bgm/playing.mp3',
     'sfx/haha1.ogg',
@@ -66,10 +73,11 @@ void main() async {
     'sfx/ouch11.ogg',
   ]);
 
-  LangawGame game = LangawGame(storage);
-  runApp(game.widget);
-
-  TapGestureRecognizer tapper = TapGestureRecognizer();
-  tapper.onTapDown = game.onTapDown;
-  flameUtil.addGestureRecognizer(tapper);
+  // Initialize and run the game
+  final game = LangawGame(storage);
+  runApp(
+    GameWidget(
+      game: game,
+    ),
+  );
 }
